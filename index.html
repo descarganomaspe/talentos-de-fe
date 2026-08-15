@@ -861,5 +861,6 @@ function terminar(){ S.tribus.forEach(function(t){t.t=0;}); talentosUI(); inicio
 document.addEventListener('DOMContentLoaded', arrancar);
 </script>
 
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </body>
 </html>
