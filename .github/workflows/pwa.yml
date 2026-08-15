@@ -1,0 +1,114 @@
+name: Preparar PWA
+
+# Saca los iconos que estan metidos dentro del index.html como data:URI,
+# los escribe como PNG de verdad, arma el manifest.json y apunta el HTML
+# a esos archivos. Android necesita descargar manifest e iconos desde una
+# URL real para crear la app; con data:URI solo hace un acceso directo.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'index.html'
+
+permissions:
+  contents: write
+
+jobs:
+  pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extraer iconos y armar manifest
+        run: |
+          python3 - <<'EOF'
+          import re, base64, json, pathlib
+
+          p = pathlib.Path('index.html')
+          h = p.read_text(encoding='utf-8')
+
+          def cap(pat):
+              m = re.search(pat, h)
+              return m.group(1) if m else None
+
+          i192 = cap(r'sizes="192x192"[^>]*href="data:image/png;base64,([^"]+)"')
+          i512 = cap(r'sizes="512x512"[^>]*href="data:image/png;base64,([^"]+)"')
+          iapp = cap(r'rel="apple-touch-icon"[^>]*href="data:image/png;base64,([^"]+)"')
+          titulo = (cap(r'<title>([^<]+)</title>') or 'App').strip()
+          corto  = cap(r'name="apple-mobile-web-app-title" content="([^"]+)"') or titulo
+          tema   = cap(r'name="theme-color" content="(#[0-9A-Fa-f]{3,8})"') or '#000000'
+
+          if not (i192 and i512):
+              raise SystemExit('No encontre los iconos embebidos en index.html')
+
+          pathlib.Path('icono-192.png').write_bytes(base64.b64decode(i192))
+          pathlib.Path('icono-512.png').write_bytes(base64.b64decode(i512))
+          pathlib.Path('apple-touch-icon.png').write_bytes(base64.b64decode(iapp or i512))
+
+          manifest = {
+            "name": titulo,
+            "short_name": corto[:12],
+            "description": titulo,
+            "id": "./",
+            "start_url": "./",
+            "scope": "./",
+            "display": "standalone",
+            "display_override": ["standalone", "minimal-ui"],
+            "orientation": "portrait",
+            "background_color": tema,
+            "theme_color": tema,
+            "lang": "es-PE",
+            "dir": "ltr",
+            "categories": ["games"],
+            "icons": [
+              {"src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+              {"src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+              {"src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+              {"src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+            ]
+          }
+          pathlib.Path('manifest.json').write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          h = re.sub(r'(<link rel="manifest" href=")data:[^"]+(")', r'\1manifest.json\2', h)
+          h = re.sub(r'(rel="apple-touch-icon"[^>]*href=")data:[^"]+(")', r'\1apple-touch-icon.png\2', h)
+          h = re.sub(r'(sizes="192x192"[^>]*href=")data:[^"]+(")', r'\1icono-192.png\2', h)
+          h = re.sub(r'(sizes="512x512"[^>]*href=")data:[^"]+(")', r'\1icono-512.png\2', h)
+          p.write_text(h, encoding='utf-8')
+
+          print('OK:', titulo, '|', corto, '|', tema)
+          print('quedan data:URI en el head?', 'data:application/manifest' in h)
+          EOF
+
+      - name: Comprobar que quedo instalable
+        run: |
+          python3 - <<'EOF'
+          import json, pathlib, os
+          m = json.loads(pathlib.Path('manifest.json').read_text(encoding='utf-8'))
+          fallos = []
+          if not m.get('name'): fallos.append('falta name')
+          if m.get('display') not in ('standalone','fullscreen','minimal-ui'): fallos.append('display invalido')
+          if not m.get('start_url'): fallos.append('falta start_url')
+          tam = {i['sizes'] for i in m['icons']}
+          if '192x192' not in tam or '512x512' not in tam: fallos.append('faltan iconos 192 y 512')
+          if not any(i['purpose']=='any' for i in m['icons']): fallos.append('ningun icono con purpose any')
+          for f in ('icono-192.png','icono-512.png','apple-touch-icon.png','sw.js'):
+              if not os.path.exists(f): fallos.append('falta el archivo ' + f)
+              elif f.endswith('.png') and open(f,'rb').read(4)[1:4] != b'PNG':
+                  fallos.append(f + ' no es un PNG valido')
+          html = pathlib.Path('index.html').read_text(encoding='utf-8')
+          if 'href="manifest.json"' not in html: fallos.append('el HTML no apunta al manifest.json')
+          if "register('sw.js')" not in html: fallos.append('el HTML no registra el service worker')
+          if fallos:
+              raise SystemExit('NO PASA:\n - ' + '\n - '.join(fallos))
+          print('Todo en orden: instalable en Android y con icono propio en iPhone')
+          EOF
+
+      - name: Publicar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "PWA: iconos y manifest como archivos reales"
+          git push
