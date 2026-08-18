@@ -127,13 +127,13 @@ input.codigo:focus{border-color:var(--oro)}
       <p class="anim" style="animation-delay:130ms;font-size:14px;color:#9AA6C4;text-align:center;line-height:1.55;margin-bottom:22px">
         Con el código se abren las <b style="color:#fff">10 dinámicas</b> y las <b style="color:#fff">1,304 cartas</b>. Se guarda en este celular y no vuelve a pedirse.
       </p>
-      <input class="codigo anim" id="inp-codigo" style="animation-delay:180ms" placeholder="FE-2026" maxlength="14" />
+      <input class="codigo anim" id="inp-codigo" style="animation-delay:180ms" placeholder="TU CÓDIGO" maxlength="14" />
       <p id="msg-codigo" style="font-size:12.5px;text-align:center;margin:10px 0 16px;min-height:17px"></p>
       <button class="btn btn-oro btn-full anim" style="animation-delay:240ms;margin-bottom:10px" onclick="activarCodigo()">Activar</button>
       <button class="btn liquid-glass btn-full anim" style="animation-delay:300ms;margin-bottom:16px" onclick="inicio()">Seguir con la versión gratis</button>
       <p class="anim" style="animation-delay:340ms;font-size:11px;color:#6B7796;text-align:center;line-height:1.6">
         Este dispositivo: <b id="mi-dispositivo" style="color:#8E9ABA"></b><br>
-        Códigos de prueba: FE-2026 · TALENTOS · MATEO25
+        Lo recibes por WhatsApp después de tu compra. Se escribe una sola vez.
       </p>
     </div>
   </section>
@@ -184,7 +184,9 @@ input.codigo:focus{border-color:var(--oro)}
       <div id="op-modo" class="anim" style="animation-delay:60ms"></div>
       <p class="mini anim" style="animation-delay:120ms;margin:14px 0 9px">2 · ¿Para quién?</p>
       <div id="op-publico" class="anim" style="animation-delay:160ms;display:flex;gap:8px;flex-wrap:wrap"></div>
-      <p class="mini anim" style="animation-delay:220ms;margin:16px 0 9px">3 · Elige la ruta</p>
+      <p class="mini anim" style="animation-delay:200ms;margin:16px 0 9px">3 · Nivel de la trivia</p>
+      <div id="op-nivel" class="anim" style="animation-delay:220ms;display:flex;gap:8px;flex-wrap:wrap"></div>
+      <p class="mini anim" style="animation-delay:250ms;margin:16px 0 9px">4 · Elige la ruta</p>
       <div id="op-ruta" class="anim" style="animation-delay:260ms"></div>
     </div>
     <div class="pad" style="padding-bottom:20px;padding-top:8px">
@@ -207,6 +209,7 @@ input.codigo:focus{border-color:var(--oro)}
       </p>
       <div id="lista-tribus" class="anim" style="animation-delay:120ms"></div>
       <button class="btn liquid-glass btn-full anim" id="btn-add-tribu" style="animation-delay:180ms" onclick="agregarTribu()">+ Agregar tribu</button>
+      <button class="btn liquid-glass btn-full anim" style="animation-delay:220ms;font-size:12.5px;padding:11px" onclick="reiniciarMarcador()">♻️ Poner el marcador en cero</button>
     </div>
     <div class="pad" style="padding-bottom:20px;padding-top:8px">
       <button class="btn btn-oro btn-full" onclick="irDinamicas()">Elegir dinámica  ›</button>
@@ -348,8 +351,16 @@ var LS = { lic:'tdf_licencia', disp:'tdf_dispositivo', ses:'tdf_sesion', hist:'t
 var S = {
   modo:null, publico:null, ruta:null, dinamica:null, tribus:[], mazo:[], idx:0,
   timerId:null, seg:0, pistaIdx:0, respondida:false, sonido:true,
-  autoRuta:false, colaRuta:[], proyector:null, lite:true
+  autoRuta:false, colaRuta:[], proyector:null, lite:true,
+  practica:false, nivel:null
 };
+
+/* niveles de la trivia, con nombres de la casa */
+var NIVELES = [
+  {id:null,        n:'Mezclado',  e:'✨', d:'de todo un poco'},
+  {id:'Semilla',   n:'Semilla',   e:'🌱', d:'para empezar'},
+  {id:'Discípulo', n:'Discípulo', e:'🕊️', d:'hay que haber leído'}
+];
 
 /* ---------- catálogo + CÓMO SE JUEGA ---------- */
 var DIN = {
@@ -405,7 +416,12 @@ var RUTAS = [
   {id:'biblia',e:'📖',n:'Biblia en mano',d:'con Biblias físicas',pub:'T',din:['D5','D1','D2']}
 ];
 var NOMBRES = [['Judá','🦁'],['Benjamín','🐺'],['Leví','🕊️'],['Efraín','🌾'],['Neftalí','🦌'],['Zabulón','⚓']];
-var CODIGOS_VALIDOS = ['FE-2026','TALENTOS','MATEO25'];
+var HASHES = ["432b70cf-a09d1ab7", "7374d295-4d0e0d3f", "749c9003-4dd876ad", "7550d901-4e64d187", "757c02f5-4e85e4bf", "7851d1af-509f02eb", "7ac07985-524be307", "7e8241be-551beeb8", "7f324603-55897b1d", "81aa1040-5775679a", "81e5cabb-57a347a7", "98ef9b15-687b1d99", "9924e93d-68877d89", "9af30c08-69efdade", "9dfce1be-6c315f0c", "9dfcea46-6c316e14", "9e99cce2-6c8f1f2e", "a2789a28-6f7731a2", "a4043669-708ef1f5", "a932b8e4-7442c446", "a9aa4e0b-74a07225", "ab864df7-75f73811", "af86d3ff-78f8887d", "b024f95a-94898ae8", "b1892e60-7a6d47d0", "b2e886f6-7b622a08", "b2f207c5-7b8634bd", "b51914d7-7d16ace3", "b75499ea-7e9be8c8", "b97e2fd7-802e705b", "bd22dbf0-82e90cc2", "be6f4850-83eb5abc", "c3ea16a0-87dac2f2", "c581646f-88fc3efb", "c8ba6b82-6a0925e6", "cb3e8f3c-8d3c1f98", "cc2db013-8df689f3", "cc556aad-8e15ab09", "cecb4445-8fe2e7d5", "cee60956-8fdbffc6", "d0a1b02c-9135053c", "d0b43c4e-91446b52", "d15963fe-91c52736"];
+function _norm(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
+function _hh(s){ s=_norm(s); var h1=5381,h2=52711;
+  for(var i=0;i<s.length;i++){ var c=s.charCodeAt(i);
+    h1=(Math.imul(h1,33)+c)>>>0; h2=(Math.imul(h2,31)+c)>>>0; }
+  return h1.toString(16)+'-'+h2.toString(16); }
 var LITE_POR_DIN = 10;
 
 /* ---------- utilidades ---------- */
@@ -422,7 +438,8 @@ function ir(id){
   var sc=el.querySelectorAll('.scroll'); for(var s=0;s<sc.length;s++) sc[s].scrollTop=0;
 }
 function totalTalentos(){ var t=0; S.tribus.forEach(function(x){ t+=x.t; }); return t; }
-function talentosUI(){ var e=document.querySelectorAll('.talentos'); var t=totalTalentos();
+function talentosUI(){
+  var tb=$('tablero'); if(tb) tb.style.display=S.practica?'none':''; var e=document.querySelectorAll('.talentos'); var t=totalTalentos();
   for(var i=0;i<e.length;i++) e[i].textContent=t; pintarTablero(); }
 function inicio(){ pararTimer(); cerrarProyector(); pintarPortada(); ir('p-portada'); }
 
@@ -448,7 +465,7 @@ function abrirCodigo(){ $('mi-dispositivo').textContent=idDispositivo(); $('msg-
 function activarCodigo(){
   var v=($('inp-codigo').value||'').trim().toUpperCase(), m=$('msg-codigo');
   if(!v){ m.textContent='Escribe el código que te llegó por WhatsApp.'; m.style.color='#FF9B9B'; return; }
-  if(CODIGOS_VALIDOS.indexOf(v)===-1){ m.textContent='Ese código no es válido. Revísalo o escríbenos.'; m.style.color='#FF9B9B'; sonFallo(); return; }
+  if(HASHES.indexOf(_hh(v))===-1){ m.textContent='Ese código no es válido. Revísalo o escríbenos.'; m.style.color='#FF9B9B'; sonFallo(); return; }
   guardar(LS.lic,{codigo:v,disp:idDispositivo(),fecha:new Date().toISOString()});
   S.lite=false; m.textContent='¡Listo! Se desbloquearon las 10 dinámicas.'; m.style.color='var(--vida)'; sonAcierto();
   setTimeout(inicio,850);
@@ -479,7 +496,19 @@ function pintarPortada(){
 }
 
 /* ---------- configuración ---------- */
-function nuevaSesion(){ ir('p-config'); pintarConfig(); }
+function nuevaSesion(){
+  // BUG (16/08): los talentos de la partida anterior seguían sumando en la nueva.
+  // Una sesión nueva arranca SIEMPRE en cero y borra la partida guardada.
+  S.tribus.forEach(function(t){ t.t=0; });
+  S.mazo=[]; S.idx=0; S.autoRuta=false; S.colaRuta=[]; S.practica=false; S.nivel=null;
+  try{ localStorage.removeItem(LS.ses); }catch(e){}
+  talentosUI(); ir('p-config'); pintarConfig();
+}
+function reiniciarMarcador(){
+  if(!confirm('¿Poner en cero los talentos de todas las tribus?')) return;
+  S.tribus.forEach(function(t){ t.t=0; });
+  talentosUI(); pintarTribusEdit(); guardarSesion(); beep(440,.1);
+}
 function pintarConfig(){
   var m=$('op-modo'); m.innerHTML='';
   [['Multitud','🔥','30 a 100 · por tribus'],['Célula','🫂','5 a 12 · en confianza'],
@@ -487,7 +516,7 @@ function pintarConfig(){
     var b=document.createElement('button');
     b.className='opcion liquid-glass'+(S.modo===x[0]?' sel':'');
     b.innerHTML='<span class="emoji">'+x[1]+'</span><span class="op-txt"><b>'+x[0]+'</b><small>'+x[2]+'</small></span>';
-    b.onclick=function(){ S.modo=x[0]; beep(520,.06); pintarConfig(); }; m.appendChild(b); });
+    b.onclick=function(){ S.modo=x[0]; S.practica=(x[0]==='Práctica'); beep(520,.06); pintarConfig(); }; m.appendChild(b); });
   var p=$('op-publico'); p.innerHTML='';
   [['J','🙌','Jóvenes'],['A','☕','Adultos'],['T','✨','Todos']].forEach(function(x){
     var b=document.createElement('button');
@@ -502,6 +531,7 @@ function pintarConfig(){
     var extra=(S.lite&&libres<x.din.length)?' <span style="color:#8E9ABA;font-weight:500">('+libres+' de '+x.din.length+' gratis)</span>':'';
     b.innerHTML='<span class="emoji">'+x.e+'</span><span class="op-txt"><b>'+x.n+extra+'</b><small>'+x.d+' · '+x.din.map(function(d){return DIN[d].e;}).join(' ')+'</small></span>';
     b.onclick=function(){ S.ruta=x.id; if(!S.publico) S.publico=x.pub; beep(520,.06); pintarConfig(); }; r.appendChild(b); });
+  pintarNiveles();
   var listo=S.modo&&S.publico&&S.ruta;
   $('btn-continuar').disabled=!listo; $('btn-continuar').style.opacity=listo?1:.4;
   $('resumen-config').textContent=(S.modo||'—')+' · '+({J:'Jóvenes',A:'Adultos',T:'Todos'}[S.publico]||'—')+' · '+((RUTAS.filter(function(x){return x.id===S.ruta;})[0]||{}).n||'—');
@@ -509,6 +539,7 @@ function pintarConfig(){
 
 /* ---------- tribus ---------- */
 function irTribus(){
+  if(S.practica){ irDinamicas(); return; }
   var n=(S.modo==='Dúo')?2:(S.modo==='Célula'||S.modo==='Familia')?2:3;
   if(!S.tribus.length){ for(var i=0;i<n;i++) S.tribus.push({n:NOMBRES[i][0],e:NOMBRES[i][1],t:0}); }
   pintarTribusEdit(); ir('p-tribus');
@@ -547,9 +578,11 @@ function tarjetaDin(d,i){
   return c;
 }
 function disponibles(d){
+  // el nivel solo aplica a la trivia; en las demás dinámicas no existe
   var l=CARTAS.filter(function(c){
     if(c.d!==d) return false;
     if(S.publico&&S.publico!=='T'&&c.pub!=='T'&&c.pub!==S.publico) return false;
+    if(d==='D1'&&S.nivel&&c.nivel!==S.nivel) return false;
     return true; });
   return S.lite ? l.slice(0,LITE_POR_DIN) : l;
 }
@@ -588,6 +621,19 @@ function empezarRuta(){
 }
 
 /* ---------- juego ---------- */
+function pintarNiveles(){
+  var c=$('op-nivel'); if(!c) return;
+  c.innerHTML='';
+  NIVELES.forEach(function(x){
+    var hay=CARTAS.filter(function(k){ return k.d==='D1' && (!x.id||k.nivel===x.id); }).length;
+    var b=document.createElement('button');
+    b.className='chip-sel liquid-glass'+(S.nivel===x.id?' sel':'');
+    b.innerHTML=x.e+' '+x.n+' <span style="opacity:.6;font-weight:500">'+hay+'</span>';
+    b.title=x.d;
+    b.onclick=function(){ S.nivel=x.id; beep(520,.06); pintarNiveles(); };
+    c.appendChild(b);
+  });
+}
 function empezar(d){
   S.dinamica=d; S.mazo=mezclar(noUsadas(d)).slice(0,8); marcarUsadas(S.mazo,d); S.idx=0;
   talentosUI(); guardarSesion(); ir('p-juego'); pintarCarta();
@@ -683,6 +729,8 @@ function resolver(ok,boton,c,premio){
   $('res-texto').textContent=abierta?(c.a||''):(c.a?('Respuesta: '+c.a):'');
   if(c.ref) $('carta-ref').textContent='📖 '+c.ref;
   if(ok) sonAcierto(); else sonFallo();
+  // en práctica se aprende, no se compite: se ve la respuesta y se pasa
+  if(S.practica){ mostrarSiguiente(); return; }
   if(ok&&premio>0) pedirTribu(premio); else mostrarSiguiente();
   guardarSesion(); aProyector();
 }
@@ -860,6 +908,10 @@ function terminar(){ S.tribus.forEach(function(t){t.t=0;}); talentosUI(); inicio
 
 document.addEventListener('DOMContentLoaded', arrancar);
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
 </body>
 </html>
