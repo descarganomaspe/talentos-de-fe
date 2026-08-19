@@ -913,5 +913,189 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
 </script>
+<script>
+/* Invitación a instalar en la pantalla de inicio. Bloque único:
+   crea su propio CSS y su propio HTML, para poder pegarlo en una
+   app ya publicada sin tocar nada más. Fuente: 08. COMUN/instalar.py */
+(function(){
+  var _c = document.createElement('style'); _c.textContent = "\n#inst-cap{position:fixed;left:0;right:0;top:0;bottom:0;z-index:9989;background:rgba(0,0,0,.5);\n  opacity:0;pointer-events:none;transition:opacity .28s}\n#inst-cap.on{opacity:1;pointer-events:auto}\n#instalar{position:fixed;left:0;right:0;bottom:0;z-index:9990;transform:translateY(115%);\n  transition:transform .34s cubic-bezier(.16,1,.3,1);\n  background:#14161c;color:#fff;border-top:1px solid rgba(255,255,255,.12);\n  border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));\n  font-family:inherit;max-width:520px;margin:0 auto}\n#instalar.on{transform:none}\n#instalar.apunta{bottom:46px;border-radius:20px 20px 0 0}\n#instalar.apunta.on{transform:none}\n#instalar .cab{display:flex;align-items:center;gap:11px;margin-bottom:9px}\n#instalar .ico{width:42px;height:42px;border-radius:11px;flex:0 0 42px;\n  display:flex;align-items:center;justify-content:center;font-size:22px;\n  background:rgba(255,255,255,.09)}\n#instalar .cab b{font-size:15.5px;display:block;line-height:1.3}\n#instalar small{font-size:12.5px;opacity:.6}\n#instalar p{margin:0 0 14px;font-size:13.5px;line-height:1.62;opacity:.8}\n#instalar .pasos{margin:0 0 14px;padding:0;list-style:none;font-size:13.5px;line-height:1.85;opacity:.9}\n#instalar .pasos li{display:flex;gap:9px;align-items:flex-start}\n#instalar .pasos .n{flex:0 0 20px;height:20px;border-radius:999px;background:rgba(255,255,255,.14);\n  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:4px}\n#instalar .bts{display:flex;gap:9px}\n#instalar .bts button{flex:1;border-radius:999px;padding:13px;font-size:14.5px;font-weight:600;\n  background:rgba(255,255,255,.1);color:#fff;border:0;cursor:pointer;font-family:inherit}\n#instalar .bts .si{background:linear-gradient(to bottom,#f4f4f4,#dcdcdc);color:#111}\n#inst-flecha{position:fixed;z-index:9991;pointer-events:none;bottom:calc(6px + env(safe-area-inset-bottom));\n  left:50%;transform:translateX(-50%);font-size:26px;color:#fff;\n  text-shadow:0 2px 10px rgba(0,0,0,.7);display:none;\n  animation:instsalta 1.1s ease-in-out infinite}\n#inst-flecha.on{display:block}\n@keyframes instsalta{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}\n#inst-chip{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9988;\n  display:none;border:0;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:600;\n  background:rgba(20,22,28,.92);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.35);\n  cursor:pointer;font-family:inherit}\n#inst-chip.on{display:block}\n";
+  document.head.appendChild(_c);
+  var _d = document.createElement('div'); _d.innerHTML = "\n<div id=\"inst-cap\" onclick=\"instalarNo()\"></div>\n<div id=\"inst-flecha\">&#11015;&#65039;</div>\n<div id=\"instalar\" role=\"dialog\" aria-label=\"Instalar la app\">\n  <div class=\"cab\">\n    <div class=\"ico\">✨</div>\n    <div><b id=\"inst-tit\">&iquest;Instalar Talentos de Fe en tu pantalla de inicio?</b>\n      <small>Se abre como app, a pantalla completa y sin internet</small></div>\n  </div>\n  <p id=\"inst-texto\"></p>\n  <ul class=\"pasos\" id=\"inst-pasos\"></ul>\n  <div class=\"bts\">\n    <button type=\"button\" onclick=\"instalarNo()\">Ahora no</button>\n    <button type=\"button\" class=\"si\" id=\"inst-si\" onclick=\"instalarSi()\">Instalar</button>\n  </div>\n</div>\n<button type=\"button\" id=\"inst-chip\" onclick=\"ofrecerInstalar(true)\">&#128241; Instalar la app</button>\n";
+  while(_d.firstChild) document.body.appendChild(_d.firstChild);
+})();
+
+/* ─────────────────────────────────────────────────────────────────
+   Instalar en la pantalla de inicio.
+   Cada navegador lo hace distinto y iPhone no avisa nunca: por eso
+   hay que detectar dónde estamos antes de decir nada.
+   ───────────────────────────────────────────────────────────────── */
+var INST = {evento:null, caso:'', listo:false};
+var LS_INST = 'tf_inst';
+var DIAS_SNOOZE = 5;
+
+function _iq(id){ return document.getElementById(id); }
+
+function instYaEsta(){
+  try{
+    if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    if(window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) return true;
+  }catch(e){}
+  return window.navigator.standalone === true;
+}
+
+/* Qué navegador es. El orden importa: los navegadores de apps también
+   dicen "Safari" o "Chrome" en su user agent, así que van primero. */
+function instCaso(){
+  var u = navigator.userAgent || '';
+  var esIOS = /iphone|ipad|ipod/i.test(u) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if(/FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|TikTok|Snapchat/i.test(u)) return 'dentro';
+  if(/WhatsApp/i.test(u)) return 'dentro';
+  /* WhatsApp en Android abre en WebView: no tiene barra de direcciones ni menú de instalar */
+  if(/\bwv\b/i.test(u) || (/Android/i.test(u) && /Version\/[\d.]+ Chrome/i.test(u))) return 'dentro';
+  if(esIOS && /CriOS/i.test(u))  return 'ios-chrome';
+  if(esIOS && /FxiOS|EdgiOS|OPT\//i.test(u)) return 'ios-otro';
+  if(esIOS) return 'ios-safari';
+  if(/Android/i.test(u)) return 'android';
+  return 'escritorio';
+}
+
+function instPostergada(){
+  try{
+    var v = localStorage.getItem(LS_INST);
+    if(!v) return false;
+    if(v === 'si') return true;
+    var t = parseInt(v, 10);
+    if(!t) return false;
+    return (Date.now() - t) < DIAS_SNOOZE * 86400000;
+  }catch(e){ return false; }
+}
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); INST.evento = e;
+  if(!instPostergada()) setTimeout(function(){ ofrecerInstalar(); }, 2500);
+  else instChip(true);
+});
+
+window.addEventListener('appinstalled', function(){
+  try{ localStorage.setItem(LS_INST, 'si'); }catch(e){}
+  instCerrar(); instChip(false);
+});
+
+function instChip(ver){
+  var c = _iq('inst-chip'); if(!c) return;
+  if(ver && !instYaEsta()) c.classList.add('on'); else c.classList.remove('on');
+}
+
+function instCerrar(){
+  _iq('instalar').classList.remove('on');
+  _iq('inst-cap').classList.remove('on');
+  _iq('inst-flecha').classList.remove('on');
+}
+
+function ofrecerInstalar(forzar){
+  if(instYaEsta()) return;
+  if(!forzar && instPostergada()){ instChip(true); return; }
+  var caso = INST.caso || (INST.caso = instCaso());
+  var tx = _iq('inst-texto'), ps = _iq('inst-pasos'), si = _iq('inst-si'), fl = _iq('inst-flecha');
+  ps.innerHTML = ''; si.style.display = ''; fl.classList.remove('on');
+  _iq('instalar').classList.remove('apunta');
+
+  if(INST.evento){
+    tx.textContent = 'Queda con su propio ícono y se abre sin la barra del navegador.';
+    si.textContent = 'Instalar';
+  }
+  else if(caso === 'ios-safari'){
+    tx.textContent = 'En iPhone se agrega a mano, en dos pasos:';
+    ps.innerHTML =
+      '<li><span class="n">1</span><span>Toca <b>Compartir</b>, el cuadrito con la flecha hacia arriba que est&aacute; abajo al centro.</span></li>' +
+      '<li><span class="n">2</span><span>Baja en esa lista y toca <b>A&ntilde;adir a pantalla de inicio</b>.</span></li>';
+    si.textContent = 'Listo, ya la agregué';
+    fl.classList.add('on');
+    _iq('instalar').classList.add('apunta');
+  }
+  else if(caso === 'ios-chrome'){
+    tx.textContent = 'Estás en Chrome. Se agrega así:';
+    ps.innerHTML =
+      '<li><span class="n">1</span><span>Toca el bot&oacute;n <b>Compartir</b> (la flecha hacia arriba, arriba a la derecha).</span></li>' +
+      '<li><span class="n">2</span><span>Elige <b>A&ntilde;adir a pantalla de inicio</b>.</span></li>' +
+      '<li><span class="n">3</span><span>Si no aparece, abre esta p&aacute;gina en <b>Safari</b>: ah&iacute; siempre est&aacute;.</span></li>';
+    si.textContent = 'Listo, ya la agregué';
+  }
+  else if(caso === 'ios-otro'){
+    tx.innerHTML = 'Este navegador de iPhone no siempre deja instalar. Abre la página en <b>Safari</b> y ahí toca Compartir &rarr; Añadir a pantalla de inicio.';
+    si.textContent = 'Copiar el enlace';
+  }
+  else if(caso === 'dentro'){
+    tx.innerHTML = 'Est&aacute;s viendo esto <b>dentro de otra app</b> (WhatsApp, Instagram o similar). Desde ah&iacute; no se puede instalar: hay que abrirlo en el navegador.';
+    ps.innerHTML =
+      '<li><span class="n">1</span><span>Toca los <b>tres puntos</b> de arriba y elige <b>Abrir en Safari</b> o <b>Abrir en Chrome</b>.</span></li>' +
+      '<li><span class="n">2</span><span>Si no ves esa opci&oacute;n, copia el enlace y p&eacute;galo en el navegador.</span></li>';
+    si.textContent = 'Copiar el enlace';
+  }
+  else if(caso === 'android'){
+    tx.textContent = 'Se agrega desde el menú del navegador:';
+    ps.innerHTML =
+      '<li><span class="n">1</span><span>Toca los <b>tres puntos</b> arriba a la derecha.</span></li>' +
+      '<li><span class="n">2</span><span>Elige <b>Instalar aplicaci&oacute;n</b> o <b>A&ntilde;adir a pantalla de inicio</b>.</span></li>';
+    si.textContent = 'Listo, ya la agregué';
+  }
+  else { instChip(false); return; }
+
+  instChip(false);
+  _iq('inst-cap').classList.add('on');
+  _iq('instalar').classList.add('on');
+}
+
+function instalarNo(){
+  instCerrar();
+  try{ localStorage.setItem(LS_INST, String(Date.now())); }catch(e){}
+  instChip(true);
+}
+
+function instCopiar(){
+  var url = location.href.split('#')[0];
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url); }
+    else {
+      var t = document.createElement('textarea');
+      t.value = url; t.style.position='fixed'; t.style.opacity='0';
+      document.body.appendChild(t); t.select(); document.execCommand('copy');
+      document.body.removeChild(t);
+    }
+    _iq('inst-si').textContent = 'Enlace copiado \u2713';
+  }catch(e){}
+}
+
+function instalarSi(){
+  var caso = INST.caso;
+  if(INST.evento){
+    INST.evento.prompt();
+    INST.evento.userChoice.then(function(r){
+      if(r && r.outcome === 'accepted'){ try{ localStorage.setItem(LS_INST,'si'); }catch(e){} }
+      INST.evento = null; instCerrar();
+    });
+    return;
+  }
+  if(caso === 'dentro' || caso === 'ios-otro'){ instCopiar(); return; }
+  try{ localStorage.setItem(LS_INST,'si'); }catch(e){}
+  instCerrar();
+}
+
+/* Arranque. iPhone y los navegadores de apps no avisan nada, así que la
+   invitación sale sola un rato después de abrir. */
+(function(){
+  if(instYaEsta()) return;
+  INST.caso = instCaso();
+  if(INST.caso === 'escritorio') return;
+  var espera = (INST.caso === 'dentro') ? 9000 : 4000;
+  setTimeout(function(){
+    if(INST.evento) return;
+    if(instPostergada()){ instChip(true); return; }
+    ofrecerInstalar();
+  }, espera);
+})();
+
+</script>
 </body>
 </html>
