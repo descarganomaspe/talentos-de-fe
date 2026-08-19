@@ -111,6 +111,45 @@ input.codigo:focus{border-color:var(--oro)}
 .bloque{border-radius:16px;padding:14px;margin-bottom:11px}
 ::-webkit-scrollbar{width:0}
 </style>
+<style>
+#inst-cap{position:fixed;left:0;right:0;top:0;bottom:0;z-index:9989;background:rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:opacity .28s}
+#inst-cap.on{opacity:1;pointer-events:auto}
+#instalar{position:fixed;left:0;right:0;bottom:0;z-index:9990;transform:translateY(115%);
+  transition:transform .34s cubic-bezier(.16,1,.3,1);
+  background:#14161c;color:#fff;border-top:1px solid rgba(255,255,255,.12);
+  border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  font-family:inherit;max-width:520px;margin:0 auto}
+#instalar.on{transform:none}
+#instalar.apunta{bottom:46px;border-radius:20px 20px 0 0}
+#instalar.apunta.on{transform:none}
+#instalar .cab{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+#instalar .ico{width:42px;height:42px;border-radius:11px;flex:0 0 42px;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  background:rgba(255,255,255,.09)}
+#instalar .cab b{font-size:15.5px;display:block;line-height:1.3}
+#instalar small{font-size:12.5px;opacity:.6}
+#instalar p{margin:0 0 14px;font-size:13.5px;line-height:1.62;opacity:.8}
+#instalar .pasos{margin:0 0 14px;padding:0;list-style:none;font-size:13.5px;line-height:1.85;opacity:.9}
+#instalar .pasos li{display:flex;gap:9px;align-items:flex-start}
+#instalar .pasos .n{flex:0 0 20px;height:20px;border-radius:999px;background:rgba(255,255,255,.14);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:4px}
+#instalar .bts{display:flex;gap:9px}
+#instalar .bts button{flex:1;border-radius:999px;padding:13px;font-size:14.5px;font-weight:600;
+  background:rgba(255,255,255,.1);color:#fff;border:0;cursor:pointer;font-family:inherit}
+#instalar .bts .si{background:linear-gradient(to bottom,#f4f4f4,#dcdcdc);color:#111}
+#inst-flecha{position:fixed;z-index:9991;pointer-events:none;bottom:calc(6px + env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%);font-size:26px;color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.7);display:none;
+  animation:instsalta 1.1s ease-in-out infinite}
+#inst-flecha.on{display:block}
+@keyframes instsalta{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}
+#inst-chip{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9988;
+  display:none;border:0;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:600;
+  background:rgba(20,22,28,.92);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.35);
+  cursor:pointer;font-family:inherit}
+#inst-chip.on{display:block}
+</style>
 </head>
 <body>
 <div id="marco">
@@ -416,7 +455,7 @@ var RUTAS = [
   {id:'biblia',e:'📖',n:'Biblia en mano',d:'con Biblias físicas',pub:'T',din:['D5','D1','D2']}
 ];
 var NOMBRES = [['Judá','🦁'],['Benjamín','🐺'],['Leví','🕊️'],['Efraín','🌾'],['Neftalí','🦌'],['Zabulón','⚓']];
-var HASHES = ["432b70cf-a09d1ab7","4e98c87d-9958b1cd","4f6bf6da-99fdc308","5006ac69-9a75cdd9","5280d215-9c2b5303","5477e0e6-9db2dfde","5719c863-9f878ca5","571d29a6-9fa5a186","5a5a117a-a1f37c3e","5e1c96e8-a4a7e9bc","5e4402f0-a4c6cce0","72a6125d-b3c526b5","7374d295-4d0e0d3f","743bb436-b4e53832","749c9003-4dd876ad","7550d901-4e64d187","757c02f5-4e85e4bf","779d1b14-b74e9e20","7851d1af-509f02eb","7ac07985-524be307","7b7aa0e1-ba34b5a3","7c04c833-baa0e647","7e8241be-551beeb8","7f324603-55897b1d","7fb0035a-bd42f1b8","81012100-be4a090c","81aa1040-5775679a","81e5cabb-57a347a7","824b7719-bf2f4fa9","838031a3-c01fc8dd","8ba1c4aa-c6041bd6","8cba4586-c6c1e5a4","95bda395-cd72a2b7","95ed5816-cd7b4592","985cd2d2-cf441e34","98ef9b15-687b1d99","9924e93d-68877d89","99a3a8e0-d042b1fc","9a8ba574-d0db019e","9adc91dc-d11a70e8","9af30c08-69efdade","9bce54c7-d1d708ad","9cf2d9b6-d29ecf1c","9d10fa7d-d2d225b7","9d4fc6ad-d3037e3f","9dfce1be-6c315f0c","9dfcea46-6c316e14","9e99cce2-6c8f1f2e","a2789a28-6f7731a2","a4043669-708ef1f5","a42bdfc0-d7ea5308","a675edf6-d995f570","a75617fd-da44e615","a7d62342-daa8aaa6","a8685ed3-db19b2e1","a8693d97-db1b5889","a932b8e4-7442c446","a9aa4e0b-74a07225","ab864df7-75f73811","ac1c2b66-ddc3c5f6","ac4c2cb4-dde8db60","ad484e08-deae0ae8","af86d3ff-78f8887d","b024f95a-94898ae8","b1892e60-7a6d47d0","b2e886f6-7b622a08","b2f207c5-7b8634bd","b51914d7-7d16ace3","b75499ea-7e9be8c8","b97e2fd7-802e705b","bd22dbf0-82e90cc2","be6f4850-83eb5abc","c3ea16a0-87dac2f2","c581646f-88fc3efb","c8ba6b82-6a0925e6","cb3e8f3c-8d3c1f98","cc2db013-8df689f3","cc556aad-8e15ab09","cecb4445-8fe2e7d5","cee60956-8fdbffc6","d0a1b02c-9135053c","d0b43c4e-91446b52","d15963fe-91c52736"];
+var HASHES = ["432b70cf-a09d1ab7", "4e98c87d-9958b1cd", "4f6bf6da-99fdc308", "5006ac69-9a75cdd9", "5280d215-9c2b5303", "5477e0e6-9db2dfde", "5719c863-9f878ca5", "571d29a6-9fa5a186", "5a5a117a-a1f37c3e", "5e1c96e8-a4a7e9bc", "5e4402f0-a4c6cce0", "72a6125d-b3c526b5", "7374d295-4d0e0d3f", "743bb436-b4e53832", "749c9003-4dd876ad", "7550d901-4e64d187", "757c02f5-4e85e4bf", "779d1b14-b74e9e20", "7851d1af-509f02eb", "7ac07985-524be307", "7b7aa0e1-ba34b5a3", "7c04c833-baa0e647", "7e8241be-551beeb8", "7f324603-55897b1d", "7fb0035a-bd42f1b8", "81012100-be4a090c", "81aa1040-5775679a", "81e5cabb-57a347a7", "824b7719-bf2f4fa9", "838031a3-c01fc8dd", "8ba1c4aa-c6041bd6", "8cba4586-c6c1e5a4", "95bda395-cd72a2b7", "95ed5816-cd7b4592", "985cd2d2-cf441e34", "98ef9b15-687b1d99", "9924e93d-68877d89", "99a3a8e0-d042b1fc", "9a8ba574-d0db019e", "9adc91dc-d11a70e8", "9af30c08-69efdade", "9bce54c7-d1d708ad", "9cf2d9b6-d29ecf1c", "9d10fa7d-d2d225b7", "9d4fc6ad-d3037e3f", "9dfce1be-6c315f0c", "9dfcea46-6c316e14", "9e99cce2-6c8f1f2e", "a2789a28-6f7731a2", "a4043669-708ef1f5", "a42bdfc0-d7ea5308", "a675edf6-d995f570", "a75617fd-da44e615", "a7d62342-daa8aaa6", "a8685ed3-db19b2e1", "a8693d97-db1b5889", "a932b8e4-7442c446", "a9aa4e0b-74a07225", "ab864df7-75f73811", "ac1c2b66-ddc3c5f6", "ac4c2cb4-dde8db60", "ad484e08-deae0ae8", "af86d3ff-78f8887d", "b024f95a-94898ae8", "b1892e60-7a6d47d0", "b2e886f6-7b622a08", "b2f207c5-7b8634bd", "b51914d7-7d16ace3", "b75499ea-7e9be8c8", "b97e2fd7-802e705b", "bd22dbf0-82e90cc2", "be6f4850-83eb5abc", "c3ea16a0-87dac2f2", "c581646f-88fc3efb", "c8ba6b82-6a0925e6", "cb3e8f3c-8d3c1f98", "cc2db013-8df689f3", "cc556aad-8e15ab09", "cecb4445-8fe2e7d5", "cee60956-8fdbffc6", "d0a1b02c-9135053c", "d0b43c4e-91446b52", "d15963fe-91c52736"];
 function _norm(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
 function _hh(s){ s=_norm(s); var h1=5381,h2=52711;
   for(var i=0;i<s.length;i++){ var c=s.charCodeAt(i);
@@ -913,17 +952,25 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
 </script>
-<script>
-/* Invitación a instalar en la pantalla de inicio. Bloque único:
-   crea su propio CSS y su propio HTML, para poder pegarlo en una
-   app ya publicada sin tocar nada más. Fuente: 08. COMUN/instalar.py */
-(function(){
-  var _c = document.createElement('style'); _c.textContent = "\n#inst-cap{position:fixed;left:0;right:0;top:0;bottom:0;z-index:9989;background:rgba(0,0,0,.5);\n  opacity:0;pointer-events:none;transition:opacity .28s}\n#inst-cap.on{opacity:1;pointer-events:auto}\n#instalar{position:fixed;left:0;right:0;bottom:0;z-index:9990;transform:translateY(115%);\n  transition:transform .34s cubic-bezier(.16,1,.3,1);\n  background:#14161c;color:#fff;border-top:1px solid rgba(255,255,255,.12);\n  border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));\n  font-family:inherit;max-width:520px;margin:0 auto}\n#instalar.on{transform:none}\n#instalar.apunta{bottom:46px;border-radius:20px 20px 0 0}\n#instalar.apunta.on{transform:none}\n#instalar .cab{display:flex;align-items:center;gap:11px;margin-bottom:9px}\n#instalar .ico{width:42px;height:42px;border-radius:11px;flex:0 0 42px;\n  display:flex;align-items:center;justify-content:center;font-size:22px;\n  background:rgba(255,255,255,.09)}\n#instalar .cab b{font-size:15.5px;display:block;line-height:1.3}\n#instalar small{font-size:12.5px;opacity:.6}\n#instalar p{margin:0 0 14px;font-size:13.5px;line-height:1.62;opacity:.8}\n#instalar .pasos{margin:0 0 14px;padding:0;list-style:none;font-size:13.5px;line-height:1.85;opacity:.9}\n#instalar .pasos li{display:flex;gap:9px;align-items:flex-start}\n#instalar .pasos .n{flex:0 0 20px;height:20px;border-radius:999px;background:rgba(255,255,255,.14);\n  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:4px}\n#instalar .bts{display:flex;gap:9px}\n#instalar .bts button{flex:1;border-radius:999px;padding:13px;font-size:14.5px;font-weight:600;\n  background:rgba(255,255,255,.1);color:#fff;border:0;cursor:pointer;font-family:inherit}\n#instalar .bts .si{background:linear-gradient(to bottom,#f4f4f4,#dcdcdc);color:#111}\n#inst-flecha{position:fixed;z-index:9991;pointer-events:none;bottom:calc(6px + env(safe-area-inset-bottom));\n  left:50%;transform:translateX(-50%);font-size:26px;color:#fff;\n  text-shadow:0 2px 10px rgba(0,0,0,.7);display:none;\n  animation:instsalta 1.1s ease-in-out infinite}\n#inst-flecha.on{display:block}\n@keyframes instsalta{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}\n#inst-chip{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9988;\n  display:none;border:0;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:600;\n  background:rgba(20,22,28,.92);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.35);\n  cursor:pointer;font-family:inherit}\n#inst-chip.on{display:block}\n";
-  document.head.appendChild(_c);
-  var _d = document.createElement('div'); _d.innerHTML = "\n<div id=\"inst-cap\" onclick=\"instalarNo()\"></div>\n<div id=\"inst-flecha\">&#11015;&#65039;</div>\n<div id=\"instalar\" role=\"dialog\" aria-label=\"Instalar la app\">\n  <div class=\"cab\">\n    <div class=\"ico\">✨</div>\n    <div><b id=\"inst-tit\">&iquest;Instalar Talentos de Fe en tu pantalla de inicio?</b>\n      <small>Se abre como app, a pantalla completa y sin internet</small></div>\n  </div>\n  <p id=\"inst-texto\"></p>\n  <ul class=\"pasos\" id=\"inst-pasos\"></ul>\n  <div class=\"bts\">\n    <button type=\"button\" onclick=\"instalarNo()\">Ahora no</button>\n    <button type=\"button\" class=\"si\" id=\"inst-si\" onclick=\"instalarSi()\">Instalar</button>\n  </div>\n</div>\n<button type=\"button\" id=\"inst-chip\" onclick=\"ofrecerInstalar(true)\">&#128241; Instalar la app</button>\n";
-  while(_d.firstChild) document.body.appendChild(_d.firstChild);
-})();
 
+<div id="inst-cap" onclick="instalarNo()"></div>
+<div id="inst-flecha">&#11015;&#65039;</div>
+<div id="instalar" role="dialog" aria-label="Instalar la app">
+  <div class="cab">
+    <div class="ico">✨</div>
+    <div><b id="inst-tit">&iquest;Instalar Talentos de Fe en tu pantalla de inicio?</b>
+      <small>Se abre como app, a pantalla completa y sin internet</small></div>
+  </div>
+  <p id="inst-texto"></p>
+  <ul class="pasos" id="inst-pasos"></ul>
+  <div class="bts">
+    <button type="button" onclick="instalarNo()">Ahora no</button>
+    <button type="button" class="si" id="inst-si" onclick="instalarSi()">Instalar</button>
+  </div>
+</div>
+<button type="button" id="inst-chip" onclick="ofrecerInstalar(true)">&#128241; Instalar la app</button>
+
+<script>
 /* ─────────────────────────────────────────────────────────────────
    Instalar en la pantalla de inicio.
    Cada navegador lo hace distinto y iPhone no avisa nunca: por eso
@@ -964,7 +1011,7 @@ function instPostergada(){
   try{
     var v = localStorage.getItem(LS_INST);
     if(!v) return false;
-    if(v === 'si') return true;
+    if(v === 'si') return true;                       /* ya la instaló */
     var t = parseInt(v, 10);
     if(!t) return false;
     return (Date.now() - t) < DIAS_SNOOZE * 86400000;
@@ -993,6 +1040,7 @@ function instCerrar(){
   _iq('inst-flecha').classList.remove('on');
 }
 
+/* forzar = lo pidió el usuario tocando el chip, así que se muestra igual */
 function ofrecerInstalar(forzar){
   if(instYaEsta()) return;
   if(!forzar && instPostergada()){ instChip(true); return; }
@@ -1012,7 +1060,7 @@ function ofrecerInstalar(forzar){
       '<li><span class="n">2</span><span>Baja en esa lista y toca <b>A&ntilde;adir a pantalla de inicio</b>.</span></li>';
     si.textContent = 'Listo, ya la agregué';
     fl.classList.add('on');
-    _iq('instalar').classList.add('apunta');
+    _iq('instalar').classList.add('apunta');   /* deja libre la franja de abajo */
   }
   else if(caso === 'ios-chrome'){
     tx.textContent = 'Estás en Chrome. Se agrega así:';
@@ -1040,7 +1088,7 @@ function ofrecerInstalar(forzar){
       '<li><span class="n">2</span><span>Elige <b>Instalar aplicaci&oacute;n</b> o <b>A&ntilde;adir a pantalla de inicio</b>.</span></li>';
     si.textContent = 'Listo, ya la agregué';
   }
-  else { instChip(false); return; }
+  else { instChip(false); return; }   /* escritorio: no molestamos */
 
   instChip(false);
   _iq('inst-cap').classList.add('on');
@@ -1050,7 +1098,7 @@ function ofrecerInstalar(forzar){
 function instalarNo(){
   instCerrar();
   try{ localStorage.setItem(LS_INST, String(Date.now())); }catch(e){}
-  instChip(true);
+  instChip(true);          /* queda el botón chiquito, para que no se pierda */
 }
 
 function instCopiar(){
@@ -1083,19 +1131,19 @@ function instalarSi(){
 }
 
 /* Arranque. iPhone y los navegadores de apps no avisan nada, así que la
-   invitación sale sola un rato después de abrir. */
+   invitación sale sola un rato después de abrir: el tiempo suficiente para
+   que la persona vea de qué se trata la app y no le parezca un pop-up. */
 (function(){
   if(instYaEsta()) return;
   INST.caso = instCaso();
   if(INST.caso === 'escritorio') return;
   var espera = (INST.caso === 'dentro') ? 9000 : 4000;
   setTimeout(function(){
-    if(INST.evento) return;
+    if(INST.evento) return;                 /* Android ya se encargó */
     if(instPostergada()){ instChip(true); return; }
     ofrecerInstalar();
   }, espera);
 })();
-
 </script>
 </body>
 </html>
