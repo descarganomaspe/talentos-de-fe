@@ -550,8 +550,7 @@ function reiniciarMarcador(){
 }
 function pintarConfig(){
   var m=$('op-modo'); m.innerHTML='';
-  [['Multitud','🔥','30 a 100 · por tribus'],['Célula','🫂','5 a 12 · en confianza'],
-   ['Familia','🏠','en casa, todas las edades'],['Dúo','💛','2 personas']].forEach(function(x){
+  [['Multitud','🔥','30 a 100 · por tribus'],['Célula','🫂','5 a 12 · en confianza'],['Familia','🏠','en casa, todas las edades'],['Dúo','💛','2 personas'],['Práctica','🎯','1 persona · repasa tú solo']].forEach(function(x){
     var b=document.createElement('button');
     b.className='opcion liquid-glass'+(S.modo===x[0]?' sel':'');
     b.innerHTML='<span class="emoji">'+x[1]+'</span><span class="op-txt"><b>'+x[0]+'</b><small>'+x[2]+'</small></span>';
